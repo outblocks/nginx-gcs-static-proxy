@@ -4,6 +4,8 @@ Environment variables:
 
 `GCS_BUCKET` - GCS bucket to point at.
 
+`PATH_PREFIX` - Bucket URL path prefix, defaults to empty string.
+
 `INDEX` - index path. Default: index.html.
 
 `PORT` - port to listen at. Default: 80.

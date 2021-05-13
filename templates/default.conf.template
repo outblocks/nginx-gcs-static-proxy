@@ -4,7 +4,7 @@ upstream gs {
 }
 
 server {
-    listen       ${PORT};
+    listen       ${PORT:-80};
     server_name  localhost;
 
 
@@ -23,7 +23,7 @@ server {
 
 
     location / {
-        rewrite /$$ /${INDEX};
+        rewrite /$$ /${INDEX:-index.html};
 
         proxy_set_header    Host storage.googleapis.com;
         proxy_pass          https://gs/${GCS_BUCKET}$$uri;

@@ -13,3 +13,5 @@ Environment variables:
 `ERROR404` - Error 404 handler. Default: index.html.
 
 `ERROR404_CODE` - Error 404 code override. Default: 404.
+
+`REWRITE_TO_HTTPS` - If defined, will rewrite http to https with 301 http code.

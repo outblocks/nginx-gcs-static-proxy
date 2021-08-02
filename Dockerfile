@@ -1,7 +1,8 @@
-FROM nginx:1.20
+FROM nginx:1.21
 
-ARG ENVSUBST_VERSION=1.2.0
-RUN curl -sL "https://github.com/a8m/envsubst/releases/download/v${ENVSUBST_VERSION}/envsubst-Linux-x86_64" -o /usr/local/bin/envsubst && \
-    chmod +x /usr/local/bin/envsubst
+ARG GUCCI_VERSION=1.4.0
+RUN curl -sL https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 -o /usr/local/bin/gucci && \
+    chmod +x /usr/local/bin/gucci
 
 ADD templates /etc/nginx/templates
+ADD docker-entrypoint.d /docker-entrypoint.d

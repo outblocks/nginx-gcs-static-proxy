@@ -4,7 +4,7 @@ upstream gs {
 }
 
 server {
-    listen       ${PORT:-80};
+    listen       {{ .PORT | default "80" }};
     server_name  localhost;
 
 
@@ -17,16 +17,21 @@ server {
 
     server_tokens off;
 
-    if ( $$request_method !~ "GET|HEAD" ) {
+    if ( $request_method !~ "GET|HEAD" ) {
         return 405;
     }
 
+{{- if .REWRITE_TO_HTTPS }}
+    if ( $scheme = "http" ) {
+        return 301 https://$server_name$request_uri;
+    }
+{{ end }}
 
     location / {
-        rewrite /$$ /${INDEX:-index.html};
+        rewrite /$ /{{ .INDEX | default "index.html" }};
 
         proxy_set_header    Host storage.googleapis.com;
-        proxy_pass          https://gs/${GCS_BUCKET}${PATH_PREFIX}$$uri;
+        proxy_pass          https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX }}$uri;
         proxy_http_version  1.1;
         proxy_set_header    Connection "";
 
@@ -45,6 +50,6 @@ server {
         proxy_hide_header       Set-Cookie;
         proxy_ignore_headers    Set-Cookie;
 
-        error_page 404 =${ERROR404_CODE:-404} /${ERROR404:-index.html};
+        error_page 404 ={{ .ERROR404_CODE | default "404" }} /{{ .ERROR404 | default "index.html" }};
     }
 }

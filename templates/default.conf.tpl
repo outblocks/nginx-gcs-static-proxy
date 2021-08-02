@@ -31,7 +31,7 @@ server {
         rewrite /$ /{{ .INDEX | default "index.html" }};
 
         proxy_set_header    Host storage.googleapis.com;
-        proxy_pass          https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX }}$uri;
+        proxy_pass          https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
         proxy_http_version  1.1;
         proxy_set_header    Connection "";
 

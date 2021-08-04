@@ -14,4 +14,4 @@ Environment variables:
 
 `ERROR404_CODE` - Error 404 code override. Default: 404.
 
-`REWRITE_TO_HTTPS` - If defined, will rewrite http to https with 301 http code.
+`REDIRECT_TO_HTTPS` - If defined, will rewrite http to https with 301 http code.

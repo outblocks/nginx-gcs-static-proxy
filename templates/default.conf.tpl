@@ -21,9 +21,9 @@ server {
         return 405;
     }
 
-{{- if .REWRITE_TO_HTTPS }}
+{{- if .REDIRECT_TO_HTTPS }}
     if ( $scheme = "http" ) {
-        return 301 https://$server_name$request_uri;
+        return 301 https://$host$request_uri;
     }
 {{ end }}
 

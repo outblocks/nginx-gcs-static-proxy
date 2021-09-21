@@ -6,3 +6,4 @@ RUN curl -sL https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/
 
 ADD templates /etc/nginx/templates
 ADD docker-entrypoint.d /docker-entrypoint.d
+ADD nginx.conf /etc/nginx/nginx.conf

@@ -22,7 +22,7 @@ server {
     }
 
 {{- if .FORCE_HTTPS }}
-    if ( $scheme = "http" ) {
+    if ( $real_scheme = "http" ) {
         return 301 https://$host$request_uri;
     }
 {{ end }}

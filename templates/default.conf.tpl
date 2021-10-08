@@ -27,29 +27,31 @@ server {
     }
 {{ end }}
 
-    location / {
-        rewrite /$ /{{ .INDEX | default "index.html" }};
-
-        proxy_set_header    Host storage.googleapis.com;
-        proxy_pass          https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
-        proxy_http_version  1.1;
-        proxy_set_header    Connection "";
-
-        proxy_intercept_errors on;
-        proxy_hide_header       alt-svc;
-        proxy_hide_header       X-GUploader-UploadID;
-        proxy_hide_header       alternate-protocol;
-        proxy_hide_header       x-goog-hash;
-        proxy_hide_header       x-goog-generation;
-        proxy_hide_header       x-goog-metageneration;
-        proxy_hide_header       x-goog-stored-content-encoding;
-        proxy_hide_header       x-goog-stored-content-length;
-        proxy_hide_header       x-goog-storage-class;
-        proxy_hide_header       x-xss-protection;
-        proxy_hide_header       accept-ranges;
-        proxy_hide_header       Set-Cookie;
-        proxy_ignore_headers    Set-Cookie;
-
-        error_page 404 ={{ .ERROR404_CODE | default "404" }} /{{ .ERROR404 | default "index.html" }};
+    location = / {
+        rewrite ^ /{{ .INDEX | default "index.html" }} last;
     }
+
+{{ if eq .ROUTING "react" }}
+    location / {
+        include "gcs.conf";
+
+        error_page 404 403 =200 /{{ .INDEX | default "index.html" }};
+
+        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
+    }
+{{ else if eq .ROUTING "gatsby" }}
+    location / {
+        include "gcs.conf";
+
+        rewrite ^([^.]*[^/])\$ \$1/ permanent;
+        error_page 404 403 =200 ${uri}{{ .INDEX | default "index.html" }};
+
+        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
+    }
+{{ else }}
+    location / {
+        include "gcs.conf";
+        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
+    }
+{{ end }}
 }

@@ -4,14 +4,12 @@ Environment variables:
 
 `GCS_BUCKET` - GCS bucket to point at.
 
+`ROUTING` - routing to use. Possible values: `react`, `gatsby`, `disabled`.
+
 `PATH_PREFIX` - Bucket URL path prefix, defaults to empty string.
 
 `INDEX` - index path. Default: index.html.
 
 `PORT` - port to listen at. Default: 80.
-
-`ERROR404` - Error 404 handler. Default: index.html.
-
-`ERROR404_CODE` - Error 404 code override. Default: 404.
 
 `FORCE_HTTPS` - If defined, will redirect http to https with 301 http code.

@@ -8,8 +8,10 @@ Environment variables:
 
 `PATH_PREFIX` - Bucket URL path prefix, defaults to empty string.
 
-`INDEX` - index path. Default: index.html.
+`INDEX` - index path. Default: `index.html`.
 
-`PORT` - port to listen at. Default: 80.
+`PORT` - port to listen at. Default: `80`.
 
 `FORCE_HTTPS` - If defined, will redirect http to https with 301 http code.
+
+`ERROR_404` - error 404 handling. Not available when routing is `react`. Default: `/404.html`.

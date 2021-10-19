@@ -1,3 +1,6 @@
+{{ $index := default "index.html" .INDEX -}}
+{{ $path_prefix := default "" .PATH_PREFIX -}}
+# {{ $index }}
 upstream gs {
     server                   storage.googleapis.com:443;
     keepalive                128;
@@ -15,7 +18,9 @@ server {
 
     gzip on;
 
-    server_tokens off;
+    server_tokens           off;
+    recursive_error_pages   on;
+    absolute_redirect       off;
 
     if ( $request_method !~ "GET|HEAD" ) {
         return 405;
@@ -28,30 +33,42 @@ server {
 {{ end }}
 
     location = / {
-        rewrite ^ /{{ .INDEX | default "index.html" }} last;
+        rewrite ^ /{{ $index }} last;
     }
 
 {{ if eq .ROUTING "react" }}
     location / {
         include "gcs.conf";
 
-        error_page 404 403 =200 /{{ .INDEX | default "index.html" }};
+        error_page 404 403 =200 /{{ $index }};
 
-        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
+        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
     }
 {{ else if eq .ROUTING "gatsby" }}
     location / {
         include "gcs.conf";
 
-        rewrite ^([^.]*[^/])\$ \$1/ permanent;
-        error_page 404 403 =200 ${uri}{{ .INDEX | default "index.html" }};
+        rewrite ^([^.]*[^/])$ $1/ permanent;
 
-        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
+        error_page 404 403 =200 ${uri}{{ $index }};
+
+        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
+    }
+
+    location ~ {{ regexQuoteMeta $index }}$ {
+        include "gcs.conf";
+
+        error_page 404 403 =404 {{ .ERROR_404 | default "/404.html" }};
+
+        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
     }
 {{ else }}
     location / {
         include "gcs.conf";
-        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ .PATH_PREFIX | default "" }}$uri;
+
+        error_page 404 403 =404 {{ .ERROR_404 | default "/404.html" }};
+
+        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
     }
 {{ end }}
 }

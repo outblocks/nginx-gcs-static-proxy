@@ -16,7 +16,23 @@ server {
     resolver                   8.8.8.8 valid=300s ipv6=off;
     resolver_timeout           10s;
 
-    gzip on;
+    gzip              on;
+    gzip_disable      "msie6";
+    gzip_comp_level   6;
+    gzip_min_length   1100;
+    gzip_buffers      16 8k;
+    gzip_proxied      any;
+    gzip_types
+        text/plain
+        text/css
+        text/js
+        text/xml
+        text/javascript
+        application/javascript
+        application/x-javascript
+        application/json
+        application/xml
+        application/xml+rss;
 
     server_tokens           off;
     recursive_error_pages   on;

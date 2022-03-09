@@ -1,6 +1,8 @@
 {{ $index := default "index.html" .INDEX -}}
 {{ $path_prefix := default "" .PATH_PREFIX -}}
-# {{ $index }}
+{{ $force_https := default "0" .FORCE_HTTPS -}}
+{{ $basic_auth := default "0" .BASIC_AUTH -}}
+{{ $remove_trailing_slash := default "0" .REMOVE_TRAILING_SLASH -}}
 upstream gs {
     server                   storage.googleapis.com:443;
     keepalive                128;
@@ -42,7 +44,7 @@ server {
         return 405;
     }
 
-{{- if .FORCE_HTTPS }}
+{{- if eq $force_https "1" }}
     if ( $real_scheme = "http" ) {
         return 301 https://$host$request_uri;
     }
@@ -56,9 +58,19 @@ server {
     location / {
         include "gcs.conf";
 
-        error_page 404 403 =200 /{{ $index }};
+        {{- if eq $remove_trailing_slash "1" }}
 
-        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
+        rewrite ^([^.]*[^/])$ $1/ permanent;
+        {{ end }}
+
+        {{- if eq $basic_auth "1" }}
+
+        auth_basic              "{{ default .BASIC_AUTH_REALM "restricted" }}";
+        auth_basic_user_file    /etc/nginx/auth.htpasswd;
+        {{ end }}
+
+        error_page 404 403 =200 /{{ $index }};
+        proxy_pass https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
     }
 {{ else if eq .ROUTING "gatsby" }}
     location / {
@@ -66,25 +78,45 @@ server {
 
         rewrite ^([^.]*[^/])$ $1/ permanent;
 
-        error_page 404 403 =200 ${uri}{{ $index }};
+        {{- if eq $basic_auth "1" }}
 
-        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
+        auth_basic              "{{ default .BASIC_AUTH_REALM "restricted" }}";
+        auth_basic_user_file    /etc/nginx/auth.htpasswd;
+        {{ end }}
+
+        error_page 404 403 =200 ${uri}{{ $index }};
+        proxy_pass https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
     }
 
     location ~ {{ regexQuoteMeta $index }}$ {
         include "gcs.conf";
 
-        error_page 404 403 =404 {{ .ERROR_404 | default "/404.html" }};
+        {{- if eq $basic_auth "1" }}
 
-        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
+        auth_basic              "{{ default .BASIC_AUTH_REALM "restricted" }}";
+        auth_basic_user_file    /etc/nginx/auth.htpasswd;
+        {{ end }}
+
+        error_page 404 403 =404 {{ .ERROR_404 | default "/404.html" }};
+        proxy_pass https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
     }
 {{ else }}
     location / {
         include "gcs.conf";
 
-        error_page 404 403 =404 {{ .ERROR_404 | default "/404.html" }};
+        {{- if eq $remove_trailing_slash "1" }}
 
-        proxy_pass              https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
+        rewrite ^([^.]*[^/])$ $1/ permanent;
+        {{ end }}
+
+        {{- if eq $basic_auth "1" }}
+
+        auth_basic              "{{ default .BASIC_AUTH_REALM "restricted" }}";
+        auth_basic_user_file    /etc/nginx/auth.htpasswd;
+        {{ end }}
+
+        error_page 404 403 =404 {{ .ERROR_404 | default "/404.html" }};
+        proxy_pass https://gs/{{ .GCS_BUCKET }}{{ $path_prefix }}$uri;
     }
 {{ end }}
 }
